@@ -32,3 +32,11 @@ double Complex::getImag() const {
 double Complex::abs() const {
 	return sqrt(this->real * this->real + this->imaginary * this->imaginary);
 }
+
+double Complex::notCovered() const {
+	return 0;
+}
+
+double Complex::covered() const {
+	return 1;
+}

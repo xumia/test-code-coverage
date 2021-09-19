@@ -11,6 +11,7 @@ pr:
 
 variables:
   DIFF_COVER_DISABLE: 'false'
+  DIFF_COVER_CHECK_THRESHOLD: 80
 
 name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
