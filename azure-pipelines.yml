@@ -1,0 +1,70 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger: none
+pr:
+  branches:
+    include:
+      - main
+
+name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+stages:
+- stage: Build
+  pool:
+    vmImage: 'ubuntu-20.04'
+  jobs:
+  - job: Build
+    displayName: Build
+    steps:
+    - checkout: self
+      displayName: 'Checkout code'
+    - script: |
+        sudo apt-get install -y golang-go
+        sudo apt-get install -y gcovr
+        sudo apt-get install python3-pip
+        sudo pip3 install pytest pytest-cov
+      displayName: 'Install packages'
+    - script: |
+        set -ex
+        curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+        sudo apt-add-repository https://packages.microsoft.com/ubuntu/20.04/prod
+        sudo apt-get update
+        sudo apt-get install -y dotnet-sdk-5.0
+      displayName: 'Install .NET CORE'
+    - script: |
+        cd cpp
+        ./build.sh
+        gcovr -r $(pwd) --exclude-unreachable-branches  -x -o coverage.xml
+        mkdir -p htmlcov
+        gcovr -r $(pwd) --html --html-details -o htmlcov/index.html
+      displayName: 'Build cpp'
+    - script: |
+        cd python
+        python3 setup.py bdist_wheel
+        pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
+      displayName: 'Build python'
+    - script: |
+        cd golang
+        go get github.com/axw/gocov/...
+        go get github.com/AlekSi/gocov-xml
+        export PATH=$PATH:$(go env GOPATH)/bin
+        go test -race -coverprofile=coverage.txt -covermode=atomic
+        gocov convert coverage.txt | gocov-xml -source $(pwd) > coverage.xml
+        mkdir -p htmlcov
+        go tool cover -html=coverage.txt -o htmlcov/coverage.html
+      displayName: 'Build golang'
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFiles: '$(System.DefaultWorkingDirectory)/python/junit/test-results.xml'
+        testRunTitle: Python
+        failTaskOnFailedTests: true
+      condition: succeededOrFailed()
+      displayName: 'Publish Python test results'
+     - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/python/coverage.xml' #only support one of the coverage.xml files
+      displayName: 'Publish coverage'
