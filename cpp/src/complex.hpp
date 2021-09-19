@@ -28,6 +28,8 @@ public:
 	double getReal() const;
 	double getImag() const;
 	double abs() const;
+	double notCoverred() const;
+	double coverred() const;
 };
 
 #endif // _SRC_COMPLEX_HPP_
