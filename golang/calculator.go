@@ -10,3 +10,11 @@ func Subtract(x, y int) int {
 	*/
 	return x - y
 }
+
+func NotCovered() int {
+	return 0;
+}
+
+func Covered() int {
+	return 1;
+}
