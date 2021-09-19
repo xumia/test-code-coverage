@@ -89,8 +89,12 @@ stages:
           diff-cover $converage_files --ignore-unstaged --compare-branch=$compare_branch --html-report=.coverage/htmlcov/index.html > /dev/null
           diff-cover $converage_files --ignore-unstaged --compare-branch=$compare_branch --json-report=.coverage/diff-cover.json
           ls -lt
+          coverage_file=$(echo $converage_files | cut -d " " -f1)
+          coverage_file=$(realpath $coverage_file)
+          echo "coverage_file=$coverage_file"
           echo "##vso[task.setvariable variable=disable.coverage.autogenerate;]true"
           echo "##vso[task.setvariable variable=has.coverage.files;]true"
+          echo "##vso[task.setvariable variable=code.coverage.file;]$coverage_file"
       displayName: "[Auto] Show diff coverage"
       continueOnError: true
     - task: PythonScript@0
@@ -150,7 +154,7 @@ stages:
     - task: PublishCodeCoverageResults@1
       inputs:
         codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage.xml'
+        summaryFileLocation: '$(code.coverage.file)'
         reportDirectory: '$(System.DefaultWorkingDirectory)/.coverage/htmlcov'
       displayName: '[Auto] Publish coverage'
       condition: eq(variables['has.coverage.files'], 'true')

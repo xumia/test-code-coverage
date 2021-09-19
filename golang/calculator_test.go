@@ -8,7 +8,7 @@ func TestAdd(t *testing.T) {
 	}
 }
 
-fun TestCoverred(t *testing.T) {
+func TestCoverred(t *testing.T) {
 	if got, want := Covered(), 1; got != want {
         t.Errorf("Covered method produced wrong result. expected: %d, got: %d", want, got)
     }
