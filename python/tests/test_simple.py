@@ -5,6 +5,7 @@
 import unittest
 
 from sample.simple import add_one
+from sample.simple import covered
 
 
 class TestSimple(unittest.TestCase):
